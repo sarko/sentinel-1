@@ -1,0 +1,33 @@
+<graph id="someGraphId">
+    <version>1.0</version>
+    <node id="reader">
+      <operator>Read</operator>
+      <sources/>
+      <parameters>
+        <file>file</file>
+        <formatName>string</formatName>
+      </parameters>
+    </node>
+    <node id="applyOrbit">
+      <operator>Apply-Orbit-File</operator>
+      <sources>
+        <source refid="reader /">
+      </sources>
+      <parameters>
+        <orbitType>Sentinel Precise</orbitType>
+        <continueOnFail>true</continueOnFail>
+      </parameters>
+    </node>
+    <node id="topsarSplit">
+      <operator>TOPSAR-Split</operator>
+      <sources>
+        <source refid="applyOrbit" />
+      </sources>
+      <parameters>
+        <subswath>string</subswath>
+        <firstBurstIndex>integer</firstBurstIndex>
+        <lastBurstIndex>integer</lastBurstIndex>
+      </parameters>
+    </node>
+</graph>
+

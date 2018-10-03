@@ -1,0 +1,46 @@
+<graph id="Graph">
+    <version>1.0</version>
+    <node id="PSReader">
+      <operator>ProductSet-Reader</operator>
+      <sources />
+      <parameters>
+        <fileList></fileList>
+      </parameters>
+    </node>
+    <node id="TSMerge">
+      <operator>TOPSAR-Merge</operator>
+      <sources>
+        <sourceProduct refid="PSReader" />
+      </sources>
+      <parameters />
+    </node>
+    <node id="GSFilter">
+      <operator>GoldsteinPhaseFiltering</operator>
+      <sources>
+        <sourceProduct refid="TSMerge" />
+      </sources>
+      <parameters>
+      </parameters>
+    </node>
+    <node id="Multilook">
+      <operator>Multilook</operator>
+      <sources>
+        <source refid="GSFilter" />
+      </sources>
+      <parameters>
+        <nRgLooks>4</nRgLooks>
+        <nAzLooks>1</nAzLooks>
+      </parameters>
+    </node>
+
+    <node id="Write">
+      <operator>Write</operator>
+      <sources>
+        <sourceProduct refid="Multilook"/>
+      </sources>
+      <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+        <file>./target-productset.dim</file>
+        <formatName>BEAM-DIMAP</formatName>
+      </parameters>
+    </node>
+</graph>
