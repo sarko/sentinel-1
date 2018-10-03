@@ -13,6 +13,8 @@ import csv
 # script
 global baseSNAP
 baseSNAP = '/home/sarko/snap/bin/gpt -q 14 -c 16G  '
+
+
 global extDEM
 extDEM=''
 global subSwath
@@ -65,6 +67,10 @@ if len(sys.argv)>3:
             subs = 'POLYGON((%3.2f %3.2f,%3.2f %3.2f,%3.2f %3.2f,%3.2f %3.2f, %3.2f %3.2f))' % (ullon,ullat,lrlon,ullat,lrlon,lrlat,ullon,lrlat,ullon,ullat)
             subset = True
             i = i+4
+
+# Create geotiffs directory (if not already present)
+if not os.path.exists('./geotiffs'):
+    os.system('mkdir ./geotiffs')
 
 if dirDefined == False:
     tdir = './temp/'
