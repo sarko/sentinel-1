@@ -13,6 +13,7 @@ import csv
 # script
 global baseSNAP
 baseSNAP = '/home/sarko/snap/bin/gpt -q 14 -c 16G  '
+xmlfi = open('/home/sarko/arkobin/mergeDEMgraph.xml','r')
 
 
 global extDEM
@@ -355,7 +356,6 @@ if os.path.exists(master) and os.path.exists(slave):
         dbouts[i] = topsarDeburst(intOut,tdirs[i])
         print '\n\n'
 
-
     #if subset == True:
         #subs = 'POLYGON((%3.2f %3.2f,%3.2f %3.2f,%3.2f %3.2f,%3.2f %3.2f, %3.2f %3.2f))' % (ullon,ullat,lrlon,ullat,lrlon,lrlat,ullon,lrlat,ullon,ullat)
         #print subs
@@ -365,11 +365,9 @@ if os.path.exists(master) and os.path.exists(slave):
 
     print 'Processing TOPSAR Merge, Goldstein, and Multilook'
     mlOut = dbouts[0].replace('DB','DB_ML')
-
-    fi = open('/home/sarko/arkobin/mergeDEMgraph.xml','r')
-    fid = fi.readlines()
+    
+    fid = xmlfi.readlines()
     for i in range(0,len(fid)):
-        #print fid[i]
         if '<fileList>' in fid[i]:
             print 'identified file list'
             fid[i]  = '<fileList>'
@@ -390,8 +388,8 @@ if os.path.exists(master) and os.path.exists(slave):
         of.write(x)
     of.close()
 
-    os.system('/home/sarko/snap/bin/gpt -q 14 -c 24G %s' % outfile)
-
+    # Process the temporary xml file using gpt
+    os.system('%s %s' % (baseSNAP,outfile))
 
     unwOut = phaseUnwrap(mlOut,tdirs[0])
     print '\n\n'
