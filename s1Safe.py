@@ -1,18 +1,37 @@
 #!/usr/bin/env python
 
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
 
 
-import numpy as np
-from lxml import etree
-import os, re, sys
-import matplotlib.pyplot as plt
-import zipfile 
-from scipy.misc import imresize
-from osgeo import gdal
-import cv2
+try:
+    import numpy as np
+    from lxml import etree
+    import os, re, sys
+    import matplotlib.pyplot as plt
+    import zipfile 
+    from scipy.misc import imresize
+    from osgeo import gdal
+    import cv2
+except ImportError:
+    raise ImportError('You seem to be missing some of the required libraries')
 
-import saa_func_lib as saa
-
+try:
+    import saa_func_lib as saa
+except ImportError:
+    print('You seem to be missing the saa_func_lib.py library.  You will not be \
+            able to use the createColorDecomp function')
 
 
 class s1Safe:
