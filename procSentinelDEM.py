@@ -7,6 +7,8 @@ import datetime
 import time
 import glob
 import csv
+import saa_func_lib as saa
+from math import ceil
 
 
 # You will need to update these paths to your own if you want to use this 
@@ -32,12 +34,13 @@ dirDefined = False
 
 if len(sys.argv) == 1:
     print '******************************'
-    print ' Usage:  procSentinelDEM.py <master input file> <slave input file> [-ss subSwathNumber (default 1)] [-t tempdir] [-noorbit] [-dem demfile] [-subset ullon ullat lrlon lrlat]'
+    print ' Usage:  procSentinelDEM.py <master input file> <slave input file> [-utm] [-ss subSwathNumber (default 1)] [-t tempdir] [-noorbit] [-dem demfile] [-subset ullon ullat lrlon lrlat]'
     print ' Note:  All files and tempdir should be absolutely pathed'
     print ' The subset feature currently does not function properly and should not be used '
     print ' Input files must be an S-1 SLC zip file '
     print '******************************'
 
+UTM = False
 tdir = './'
 if len(sys.argv)>3:
     for i in range(3,len(sys.argv)):
@@ -68,6 +71,8 @@ if len(sys.argv)>3:
             subs = 'POLYGON((%3.2f %3.2f,%3.2f %3.2f,%3.2f %3.2f,%3.2f %3.2f, %3.2f %3.2f))' % (ullon,ullat,lrlon,ullat,lrlon,lrlat,ullon,lrlat,ullon,ullat)
             subset = True
             i = i+4
+        elif sys.argv[i] == '-utm':
+            UTM=True
 
 # Create geotiffs directory (if not already present)
 if not os.path.exists('./geotiffs'):
@@ -80,6 +85,13 @@ if dirDefined == False:
 
 def timestamp(date):
     return time.mktime(date.timetuple())
+
+def calcUTMZone(x,y,geoTrans):
+    cLon = geoTrans[0] + x/2*geoTrans[1]
+    zone = int(ceil((-180 - cLon)/6))
+    return zone
+    
+
 
 def tempDir(tdir,ifile,sfile,ss):
     td2 = '%s/%s-%s-%s' % (tdir,ifile[0:25],sfile[17:25],ss)
@@ -403,18 +415,40 @@ if os.path.exists(master) and os.path.exists(slave):
     tcOut = applyTC(elOut,tdirs[0],extDEM)
     print '\n\n'
 
-    cmd = 'cd %s/%s*EL_TC.data;gdal_translate el*.img elevation-%s.tif ' % (tdirs[0],mbaseGran,re.split('/',tdirs[0])[-1])
+    # Convert the final elevation and coherence products to geotiffs
+    startDir = os.getcwd()
+    dDir = '%s/%s*EL_TC' % (tdirs[0],mbaseGran)
+    dDir = glob.glob(dDir)[0]
+    elFile = 'elevation-%s.tif ' % re.split('/',tdirs[0])[-1]
+    coFile = 'coherence-%s.tif ' % re.split('/',tdirs[0])[-1]
+
+    os.chdir(dDir)
+    cmd = 'gdal_translate el*.img %s ' % elFile
     print cmd
     os.system(cmd)
 
-    cmd = 'cd %s/%s*UNW_TC.data;gdal_translate coh*.img coherence-%s.tif ' % (tdirs[0],mbaseGran,re.split('/',tdirs[0])[-1])
+    cmd = 'gdal_translate coh*.img %s ' % coFile
     print cmd
     os.system(cmd)
+
+    if UTM:
+        # Convert 4326 files to appropriate UTM zone
+        (x,y,trans,proj) = saa.read_gdal_file_geo(saa.open_gdal_file('elevation-%s.tif' % re.split('/',tdirs[0])[-1]))
+        z = calcUTMZone(x,y,trans)
+        print('Converting products to UTM Zone %02d' % zone)
+        cmd = 'gdalwarp -t_srs EPSG:326%02d %s temp.tif' % (zone,elFile)
+        os.system(cmd)
+        os.system('mv temp.tif %s' % elFile)
+        cmd = 'gdalwarp -t_srs EPSG:326%02d %s temp.tif' % (zone,coFile)
+        os.system(cmd)
+        os.system('mv temp.tif %s' % coFile)
 
     #cmd = 'mv %s/*/*.tif geotiffs; rm -r %s' % (td2,td2)
-    cmd = 'mv %s/*/*.tif geotiffs' % tdirs[0]
+    cmd = 'mv *.tif %s/geotiffs' % startDir
     print cmd
     os.system(cmd)
+    os.chdir(startDir)
+    # End of geotiff creation
 
 else: 
     print('Input file could not be found')
