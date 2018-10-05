@@ -59,6 +59,7 @@ if len(sys.argv)>3:
                 if '-' not in sys.argv[j+1]: 
             	    subSwath.append('IW%s' % sys.argv[j+1])
             	    j+=1
+                    i+=1
         elif sys.argv[i]=='-noorbit':
             noOrb = True
         elif sys.argv[i]=='-dortc':
